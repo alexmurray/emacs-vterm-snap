@@ -1,0 +1,38 @@
+name: emacs-vterm
+base: core18
+summary: Emacs libvterm integration
+description: |
+  This emacs module implements a bridge to libvterm to display a
+  terminal in an Emacs buffer.
+
+  Once installed it can be loaded via use-package as follows:
+
+    (use-package vterm
+      :load-path "/snap/emacs-vterm/current/")
+
+adopt-info: emacs-libvterm
+grade: devel
+confinement: strict
+
+parts:
+  emacs-libvterm:
+    plugin: cmake
+    source: https://github.com/akermu/emacs-libvterm.git
+    build-snaps:
+      - cmake # cmake in bionic is not new enough
+      - emacs
+    build-packages:
+     - libtool-bin
+    override-build: |
+      # set version
+      snapcraftctl set-version "$(git -C ../src describe --all --long | sed 's|heads/||')"
+      # snapcraft will always invoke install which fails as there is no
+      # install target defined so instead reimplement all of what
+      # snapcraftctl build would do
+      cmake ../src -DCMAKE_INSTALL_PREFIX= -DCMAKE_FIND_ROOT_PATH=/snap/cmake/current
+      cmake --build . -- -j2
+      # byte-compile the elisp part
+      emacs --batch -L ../src  -f batch-byte-compile ../src/*.el
+      # manually copy parts over
+      mkdir -p $SNAPCRAFT_PART_INSTALL
+      cp ../src/vterm-module.so ../src/vterm.el* $SNAPCRAFT_PART_INSTALL
