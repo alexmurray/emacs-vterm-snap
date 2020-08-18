@@ -1,5 +1,5 @@
 name: emacs-vterm
-base: core18
+base: core20
 summary: Emacs libvterm integration
 description: |
   This emacs module implements a bridge to libvterm to display a
@@ -7,19 +7,24 @@ description: |
 
   Once installed it can be loaded via use-package as follows:
 
+    (add-to-list 'load-path "/snap/emacs-vterm/current/")
+    (require 'vterm)
+
+  Or if you already use use-package:
+
     (use-package vterm
       :load-path "/snap/emacs-vterm/current/")
 
 adopt-info: emacs-libvterm
-grade: devel
-confinement: strict
+grade: stable
+confinement: strict # this doesn't really do anything since an unconfined
+                    # Emacs will load the binary we ship
 
 parts:
   emacs-libvterm:
     plugin: cmake
     source: https://github.com/akermu/emacs-libvterm.git
     build-snaps:
-      - cmake # cmake in bionic is not new enough
       - emacs
     build-packages:
      - libtool-bin
